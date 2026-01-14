@@ -1,0 +1,10 @@
+{
+  "name": "Gorila Studio",
+  "short_name": "Gorila",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#2d5a27",
+  "theme_color": "#2d5a27",
+  "orientation": "portrait",
+  "scope": "/"
+}
