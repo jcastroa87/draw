@@ -20,32 +20,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/style.css" />
-    <script>
-      // DEBUG: Error handler for production debugging
-      window.onerror = function (msg, url, lineNo, columnNo, error) {
-        var container = document.getElementById('debug-console');
-        if (!container) {
-          container = document.createElement('div');
-          container.id = 'debug-console';
-          container.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:rgba(200,0,0,0.9);color:white;z-index:99999;padding:10px;font-family:monospace;white-space:pre-wrap;max-height:50vh;overflow:auto;';
-          document.body.appendChild(container); // Append to body (might not exist yet if head error, but close)
-        }
-        container.innerHTML += '🔴 ERROR: ' + msg + '\nUser: ' + navigator.userAgent + '\nLocation: ' + url + ':' + lineNo + '\n\n';
-        return false;
-      };
-      
-      window.addEventListener('unhandledrejection', function(event) {
-         var container = document.getElementById('debug-console');
-         if (!container) {
-          container = document.createElement('div');
-          container.id = 'debug-console';
-          container.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:rgba(200,0,0,0.9);color:white;z-index:99999;padding:10px;font-family:monospace;font-size:12px;white-space:pre-wrap;max-height:50vh;overflow:auto;';
-          if(document.body) document.body.appendChild(container);
-          else document.documentElement.appendChild(container);
-        }
-        container.innerHTML += '🟠 PROMISE ERROR: ' + (event.reason ? event.reason.toString() : 'Unknown') + '\n\n';
-      });
-    </script>
   </head>
   <body>
     <div id="app">
