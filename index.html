@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="theme-color" content="#2d5a27" />
+    <title>🦍 Gorila Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Session Timer (Global) -->
+      <div id="session-display" class="session-timer hidden">⏱️ 00:00</div>
+
+      <!-- Loading Screen -->
+      <div id="loading-screen" class="screen active">
+        <div class="loading-content">
+          <div class="gorilla-mascot">🦍</div>
+          <h1 class="app-title">Gorila Studio</h1>
+          <div class="loading-bar">
+            <div class="loading-progress"></div>
+          </div>
+          <p class="loading-text">Preparando los crayones...</p>
+        </div>
+      </div>
+
+      <!-- Main Menu -->
+      <div id="menu-screen" class="screen">
+        <header class="app-header">
+          <h1 class="header-title">🦍 Gorila Studio</h1>
+          <button id="sound-toggle" class="icon-btn" aria-label="Toggle sound">
+            <span class="sound-on">🔊</span>
+            <span class="sound-off hidden">🔇</span>
+          </button>
+        </header>
+
+        <main class="menu-container">
+          <div class="menu-grid menu-grid-3x2">
+            <button class="menu-card" data-module="letters">
+              <div class="card-icon">ABC</div>
+              <div class="card-label">Letras</div>
+            </button>
+            <button class="menu-card" data-module="numbers">
+              <div class="card-icon">123</div>
+              <div class="card-label">Números</div>
+            </button>
+            <button class="menu-card" data-module="matching">
+              <div class="card-icon">🔗</div>
+              <div class="card-label">Asociar</div>
+            </button>
+            <button class="menu-card" data-module="coloring">
+              <div class="card-icon">🎨</div>
+              <div class="card-label">Colorear</div>
+            </button>
+            <button class="menu-card" data-module="free-draw">
+              <div class="card-icon">✏️</div>
+              <div class="card-label">Dibujo Libre</div>
+            </button>
+          </div>
+
+          <div class="language-selector">
+            <button class="lang-btn active" data-lang="es">🇪🇸 Español</button>
+            <button class="lang-btn" data-lang="ru">🇷🇺 Русский</button>
+          </div>
+        </main>
+
+        <div class="jungle-decoration">
+          <div class="leaf leaf-1">🌿</div>
+          <div class="leaf leaf-2">🌴</div>
+          <div class="leaf leaf-3">🍃</div>
+          <div class="banana">🍌</div>
+        </div>
+      </div>
+
+      <!-- Letters Tracing Screen -->
+      <div id="letters-screen" class="screen">
+        <header class="game-header">
+          <button class="back-btn" data-target="menu">←</button>
+          <h2 class="game-title">Letras</h2>
+          <button id="letter-picker-btn" class="picker-btn">📋</button>
+        </header>
+
+        <main class="tracing-container">
+          <div class="letter-display">
+            <span id="current-letter-big">A</span>
+          </div>
+          <canvas id="tracing-canvas" class="tracing-canvas"></canvas>
+          <div class="tracing-controls">
+            <button id="clear-tracing" class="control-btn">🗑️ Borrar</button>
+            <button id="prev-letter" class="control-btn">⬅️</button>
+            <button id="next-letter" class="control-btn">➡️</button>
+          </div>
+        </main>
+
+        <!-- Letter Picker Modal -->
+        <div id="letter-picker" class="picker-modal hidden">
+          <div class="picker-content">
+            <div class="picker-header">
+              <h3>Selecciona una letra</h3>
+              <button id="close-letter-picker" class="close-picker">✕</button>
+            </div>
+            <div id="letter-grid" class="picker-grid">
+              <!-- Letters will be added by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div id="celebration" class="celebration hidden">
+          <div class="celebration-content">
+            <div class="stars">⭐✨🌟✨⭐</div>
+            <div class="celebration-gorilla">🦍</div>
+            <div class="celebration-text">¡Muy bien!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Numbers Tracing Screen -->
+      <div id="numbers-screen" class="screen">
+        <header class="game-header">
+          <button class="back-btn" data-target="menu">←</button>
+          <h2 class="game-title">Números</h2>
+          <button id="number-picker-btn" class="picker-btn">📋</button>
+        </header>
+
+        <main class="tracing-container">
+          <div class="number-display">
+            <span id="current-number-big">0</span>
+          </div>
+          <div class="numbers-row">
+            <div id="counting-display" class="counting-display"></div>
+            <canvas id="number-canvas" class="tracing-canvas"></canvas>
+          </div>
+          <div class="tracing-controls">
+            <button id="clear-number" class="control-btn">🗑️ Borrar</button>
+            <button id="prev-number" class="control-btn">⬅️</button>
+            <button id="next-number" class="control-btn">➡️</button>
+          </div>
+        </main>
+
+        <!-- Number Picker Modal -->
+        <div id="number-picker" class="picker-modal hidden">
+          <div class="picker-content">
+            <div class="picker-header">
+              <h3>Selecciona un número</h3>
+              <button id="close-number-picker" class="close-picker">✕</button>
+            </div>
+            <div id="number-grid" class="picker-grid">
+              <!-- Numbers will be added by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div id="number-celebration" class="celebration hidden">
+          <div class="celebration-content">
+            <div class="stars">⭐✨🌟✨⭐</div>
+            <div class="celebration-gorilla">🦍</div>
+            <div class="celebration-text">¡Muy bien!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matching/Association Game Screen -->
+      <div id="matching-screen" class="screen">
+        <header class="game-header">
+          <button class="back-btn" data-target="menu">←</button>
+          <h2 class="game-title">Asociar</h2>
+          <div class="matching-score">
+            <span id="matching-score">0</span>
+            <span>⭐</span>
+          </div>
+        </header>
+
+        <main class="matching-container">
+          <div class="matching-instruction" id="matching-instruction">
+            ¡Une cada letra con su dibujo!
+          </div>
+          
+          <div class="matching-game-area">
+            <div class="matching-column" id="matching-left">
+              <!-- Letters/Numbers will be added here -->
+            </div>
+            <div class="matching-lines">
+              <svg id="matching-svg" class="matching-svg"></svg>
+            </div>
+            <div class="matching-column" id="matching-right">
+              <!-- Pictures will be added here -->
+            </div>
+          </div>
+
+          <div class="matching-controls">
+            <button id="matching-mode-letters" class="mode-btn active">АБВ Letras</button>
+            <button id="matching-mode-numbers" class="mode-btn">123 Números</button>
+            <button id="matching-new-game" class="control-btn">🔄 Nuevo</button>
+          </div>
+        </main>
+
+        <div id="matching-celebration" class="celebration hidden">
+          <div class="celebration-content">
+            <div class="stars">⭐✨🌟✨⭐</div>
+            <div class="celebration-gorilla">🦍</div>
+            <div class="celebration-text">¡Excelente!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coloring Screen -->
+      <div id="coloring-screen" class="screen">
+        <header class="game-header">
+          <button class="back-btn" data-target="menu">←</button>
+          <h2 class="game-title">Colorear</h2>
+          <div class="template-nav">
+            <button id="prev-template" class="nav-btn">◀</button>
+            <span id="template-name">Gorila</span>
+            <button id="next-template" class="nav-btn">▶</button>
+          </div>
+        </header>
+
+        <main class="coloring-container">
+          <div id="coloring-area" class="coloring-area">
+            <canvas id="coloring-canvas" class="coloring-canvas"></canvas>
+          </div>
+
+          <div class="coloring-tools">
+            <div class="color-palette" id="color-palette">
+              <!-- Colors will be added by JS -->
+            </div>
+            <div class="tool-buttons">
+              <button id="fill-tool" class="tool-btn active" title="Rellenar">
+                🪣
+              </button>
+              <button id="brush-tool" class="tool-btn" title="Pincel">
+                🖌️
+              </button>
+
+              <button id="undo-btn" class="tool-btn" title="Deshacer">
+                ↩️
+              </button>
+              <button id="clear-coloring" class="tool-btn" title="Limpiar">
+                🗑️
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- Free Drawing Screen -->
+      <div id="free-draw-screen" class="screen">
+        <header class="game-header">
+          <button class="back-btn" data-target="menu">←</button>
+          <h2 class="game-title">Dibujo Libre</h2>
+          <button id="save-drawing" class="save-btn">💾</button>
+        </header>
+
+        <main class="drawing-container">
+          <canvas id="free-canvas" class="free-canvas"></canvas>
+
+          <div class="drawing-tools">
+            <div class="color-palette" id="free-palette">
+              <!-- Colors will be added by JS -->
+            </div>
+            <div class="brush-sizes" id="brush-sizes">
+              <button class="size-btn" data-size="5">●</button>
+              <button class="size-btn active" data-size="15">⬤</button>
+              <button class="size-btn" data-size="30">⬛</button>
+            </div>
+            <div class="tool-buttons">
+              <button id="eraser-tool" class="tool-btn" title="Borrador">
+                🧽
+              </button>
+              <button id="clear-free" class="tool-btn" title="Limpiar">
+                🗑️
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+      <!-- Session Lockout Screen -->
+      <div id="lockout-screen" class="celebration hidden" style="background: rgba(0, 0, 0, 0.95); z-index: 2000;">
+        <div class="celebration-content">
+          <div class="stars">🌙 ⭐ 💤</div>
+          <div class="celebration-gorilla">🦍</div>
+          <div class="celebration-text">¡Ya es hora de descansar!</div>
+          <p style="color: white; font-size: 1.5rem; margin-top: 20px;">Nos vemos mañana 👋</p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
