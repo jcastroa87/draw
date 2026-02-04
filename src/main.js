@@ -7,8 +7,12 @@ import { letterTracing, numberTracing } from './modules/tracing.js';
 import { coloringModule } from './modules/coloring.js';
 import { freeDrawModule } from './modules/freedraw.js';
 import { matchingGame } from './modules/matching.js';
+import { progress } from './modules/progress.js';
 import { translations } from './data/translations.js';
 import { SETTINGS } from './settings.js';
+import { spanishAlphabet } from './data/letters-es.js';
+import { russianAlphabet } from './data/letters-ru.js';
+import { numbers } from './data/numbers.js';
 
 class GorilaStudio {
   constructor() {
@@ -44,9 +48,82 @@ class GorilaStudio {
     this.setupNumberTracing();
     this.setupColoring();
     this.setupFreeDraw();
-    
+    this.setupProgressDisplay();
+    this.setupResetProgress();
+
     // Start session timer
     this.startSessionTimer();
+
+    // Initial translation update
+    this.updateInterfaceLanguage();
+  }
+
+  // Setup progress display and listeners
+  setupProgressDisplay() {
+    // Listen for progress changes
+    progress.addListener(() => this.updateProgressDisplay());
+
+    // Initial update
+    this.updateProgressDisplay();
+  }
+
+  // Update all progress displays
+  updateProgressDisplay() {
+    const bananas = progress.getBananas();
+
+    // Update banana counters
+    const lettersBanana = document.getElementById('letters-banana-count');
+    const numbersBanana = document.getElementById('numbers-banana-count');
+
+    if (lettersBanana) lettersBanana.textContent = bananas;
+    if (numbersBanana) numbersBanana.textContent = bananas;
+
+    // Update menu progress indicators
+    this.updateMenuProgress();
+  }
+
+  // Update menu card progress indicators
+  updateMenuProgress() {
+    // Letters progress
+    const lettersTotal = this.language === 'ru' ? russianAlphabet.length : spanishAlphabet.length;
+    const lettersCompleted = progress.getCompletedCount('letters', this.language);
+    const lettersProgress = document.getElementById('letters-progress');
+    if (lettersProgress) {
+      lettersProgress.textContent = `${lettersCompleted}/${lettersTotal}`;
+    }
+
+    // Numbers progress
+    const numbersTotal = numbers.length;
+    const numbersCompleted = progress.getCompletedCount('numbers');
+    const numbersProgress = document.getElementById('numbers-progress');
+    if (numbersProgress) {
+      numbersProgress.textContent = `${numbersCompleted}/${numbersTotal}`;
+    }
+  }
+
+  // Setup hidden reset progress (long press on title)
+  setupResetProgress() {
+    const headerTitle = document.querySelector('.header-title');
+    if (!headerTitle) return;
+
+    let pressTimer = null;
+
+    headerTitle.addEventListener('touchstart', () => {
+      pressTimer = setTimeout(() => {
+        if (confirm('¿Reiniciar todo el progreso?')) {
+          progress.reset();
+          audio.playWhoosh();
+        }
+      }, 3000); // 3 second long press
+    });
+
+    headerTitle.addEventListener('touchend', () => {
+      if (pressTimer) clearTimeout(pressTimer);
+    });
+
+    headerTitle.addEventListener('touchcancel', () => {
+      if (pressTimer) clearTimeout(pressTimer);
+    });
   }
 
   // Start session timer
@@ -224,13 +301,16 @@ class GorilaStudio {
         
         // Update all interface text
         this.updateInterfaceLanguage();
-        
+
         // Update tracing modules
         letterTracing.setLanguage(this.language);
         numberTracing.setLanguage(this.language);
-        
+
         // Update coloring template name
         this.updateTemplateDisplay();
+
+        // Update progress display for new language
+        this.updateProgressDisplay();
       });
     });
   }
@@ -349,7 +429,15 @@ class GorilaStudio {
     const clearBtn = document.getElementById('clear-tracing');
     const prevBtn = document.getElementById('prev-letter');
     const nextBtn = document.getElementById('next-letter');
-    
+    const replayDemoBtn = document.getElementById('replay-letter-demo');
+
+    if (replayDemoBtn) {
+      replayDemoBtn.addEventListener('click', () => {
+        letterTracing.replayDemo();
+        audio.playPop();
+      });
+    }
+
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
         letterTracing.clear();
@@ -393,6 +481,15 @@ class GorilaStudio {
         items.forEach((item, index) => {
           const btn = document.createElement('button');
           btn.className = 'picker-item';
+
+          // Add progress indicator
+          const status = progress.getStatus(item.letter, 'letters', this.language);
+          if (status === 'completed') {
+            btn.classList.add('completed');
+          } else if (status === 'attempted') {
+            btn.classList.add('attempted');
+          }
+
           btn.textContent = item.letter;
           btn.addEventListener('click', () => {
             letterTracing.goToIndex(index);
@@ -416,7 +513,15 @@ class GorilaStudio {
     const clearBtn = document.getElementById('clear-number');
     const prevBtn = document.getElementById('prev-number');
     const nextBtn = document.getElementById('next-number');
-    
+    const replayDemoBtn = document.getElementById('replay-number-demo');
+
+    if (replayDemoBtn) {
+      replayDemoBtn.addEventListener('click', () => {
+        numberTracing.replayDemo();
+        audio.playPop();
+      });
+    }
+
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
         numberTracing.clear();
@@ -452,6 +557,15 @@ class GorilaStudio {
         items.forEach((item, index) => {
           const btn = document.createElement('button');
           btn.className = 'picker-item';
+
+          // Add progress indicator
+          const status = progress.getStatus(item.number.toString(), 'numbers');
+          if (status === 'completed') {
+            btn.classList.add('completed');
+          } else if (status === 'attempted') {
+            btn.classList.add('attempted');
+          }
+
           btn.textContent = item.number;
           btn.addEventListener('click', () => {
             numberTracing.goToIndex(index);
@@ -486,37 +600,105 @@ class GorilaStudio {
     const clearBtn = document.getElementById('clear-coloring');
     const prevTemplate = document.getElementById('prev-template');
     const nextTemplate = document.getElementById('next-template');
-    
+    const rainbowBtn = document.getElementById('coloring-rainbow-btn');
+    const stickerBtn = document.getElementById('coloring-sticker-btn');
+    const stickerPanel = document.getElementById('coloring-sticker-panel');
+
+    // Helper to reset tool states
+    const resetColoringTools = () => {
+      fillTool?.classList.remove('active');
+      brushTool?.classList.remove('active');
+      rainbowBtn?.classList.remove('rainbow-active');
+      stickerBtn?.classList.remove('sticker-active');
+      stickerPanel?.classList.add('hidden');
+      coloringModule.toggleRainbow(false);
+      coloringModule.setStickerMode(false);
+    };
+
     if (fillTool) {
       fillTool.addEventListener('click', () => {
+        resetColoringTools();
         coloringModule.setTool('fill');
         fillTool.classList.add('active');
-        brushTool?.classList.remove('active');
         audio.playTap();
       });
     }
-    
+
     if (brushTool) {
       brushTool.addEventListener('click', () => {
+        resetColoringTools();
         coloringModule.setTool('brush');
         brushTool.classList.add('active');
-        fillTool?.classList.remove('active');
         audio.playTap();
       });
     }
-    
+
+    // Rainbow brush button
+    if (rainbowBtn) {
+      rainbowBtn.addEventListener('click', () => {
+        const isActive = rainbowBtn.classList.contains('rainbow-active');
+        resetColoringTools();
+        if (!isActive) {
+          rainbowBtn.classList.add('rainbow-active');
+          coloringModule.toggleRainbow(true);
+          coloringModule.setTool('brush');
+        } else {
+          fillTool?.classList.add('active');
+          coloringModule.setTool('fill');
+        }
+        audio.playPop();
+      });
+    }
+
+    // Sticker button and panel
+    if (stickerBtn && stickerPanel) {
+      stickerBtn.addEventListener('click', () => {
+        const isActive = stickerBtn.classList.contains('sticker-active');
+        resetColoringTools();
+        if (!isActive) {
+          stickerBtn.classList.add('sticker-active');
+          stickerPanel.classList.remove('hidden');
+          coloringModule.setStickerMode(true);
+        } else {
+          fillTool?.classList.add('active');
+          coloringModule.setTool('fill');
+        }
+        audio.playPop();
+      });
+
+      // Sticker size buttons
+      stickerPanel.querySelectorAll('.size-select-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stickerPanel.querySelectorAll('.size-select-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          coloringModule.setStickerSize(parseInt(btn.dataset.size));
+          audio.playTap();
+        });
+      });
+
+      // Sticker emoji buttons
+      stickerPanel.querySelectorAll('.sticker-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stickerPanel.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          coloringModule.setSticker(btn.textContent);
+          audio.playTap();
+        });
+      });
+    }
+
     if (undoBtn) {
       undoBtn.addEventListener('click', () => {
         coloringModule.undo();
       });
     }
-    
+
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
         coloringModule.clear();
       });
     }
-    
+
     if (prevTemplate) {
       prevTemplate.addEventListener('click', () => {
         coloringModule.prevTemplate();
@@ -524,7 +706,7 @@ class GorilaStudio {
         audio.playPop();
       });
     }
-    
+
     if (nextTemplate) {
       nextTemplate.addEventListener('click', () => {
         coloringModule.nextTemplate();
@@ -550,35 +732,130 @@ class GorilaStudio {
     const eraserTool = document.getElementById('eraser-tool');
     const clearBtn = document.getElementById('clear-free');
     const saveBtn = document.getElementById('save-drawing');
-    
+    const rainbowBtn = document.getElementById('free-rainbow-btn');
+    const stickerBtn = document.getElementById('free-sticker-btn');
+    const stickerPanel = document.getElementById('free-sticker-panel');
+    const bgBtn = document.getElementById('free-bg-btn');
+    const bgPanel = document.getElementById('free-bg-panel');
+    const bgList = document.getElementById('bg-list');
+
+    // Helper to reset free draw tool states
+    const resetFreeTools = () => {
+      eraserTool?.classList.remove('active');
+      rainbowBtn?.classList.remove('rainbow-active');
+      stickerBtn?.classList.remove('sticker-active');
+      stickerPanel?.classList.add('hidden');
+      bgPanel?.classList.add('hidden');
+      freeDrawModule.toggleEraser(false);
+      freeDrawModule.toggleRainbow(false);
+      freeDrawModule.setStickerMode(false);
+    };
+
     // Brush sizes
     document.querySelectorAll('#brush-sizes .size-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#brush-sizes .size-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
+
         const size = parseInt(btn.dataset.size);
         freeDrawModule.setBrushSize(size);
-        freeDrawModule.toggleEraser(false);
-        eraserTool?.classList.remove('active');
+        resetFreeTools();
         audio.playTap();
       });
     });
-    
+
+    // Rainbow brush button
+    if (rainbowBtn) {
+      rainbowBtn.addEventListener('click', () => {
+        const isActive = rainbowBtn.classList.contains('rainbow-active');
+        resetFreeTools();
+        if (!isActive) {
+          rainbowBtn.classList.add('rainbow-active');
+          freeDrawModule.toggleRainbow(true);
+        }
+        audio.playPop();
+      });
+    }
+
+    // Sticker button and panel
+    if (stickerBtn && stickerPanel) {
+      stickerBtn.addEventListener('click', () => {
+        const isActive = stickerBtn.classList.contains('sticker-active');
+        resetFreeTools();
+        if (!isActive) {
+          stickerBtn.classList.add('sticker-active');
+          stickerPanel.classList.remove('hidden');
+          freeDrawModule.setStickerMode(true);
+        }
+        audio.playPop();
+      });
+
+      // Sticker size buttons
+      stickerPanel.querySelectorAll('.size-select-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stickerPanel.querySelectorAll('.size-select-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          freeDrawModule.setStickerSize(parseInt(btn.dataset.size));
+          audio.playTap();
+        });
+      });
+
+      // Sticker emoji buttons
+      stickerPanel.querySelectorAll('.sticker-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stickerPanel.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          freeDrawModule.setSticker(btn.textContent);
+          audio.playTap();
+        });
+      });
+    }
+
+    // Background picker button and panel
+    if (bgBtn && bgPanel && bgList) {
+      bgBtn.addEventListener('click', () => {
+        const isHidden = bgPanel.classList.contains('hidden');
+        resetFreeTools();
+
+        if (isHidden) {
+          // Populate background list if empty
+          if (bgList.children.length === 0) {
+            const backgrounds = freeDrawModule.getBackgrounds();
+            backgrounds.forEach(bg => {
+              const btn = document.createElement('button');
+              btn.className = 'bg-btn';
+              btn.dataset.bgId = bg.id;
+              btn.innerHTML = `<span class="bg-icon">${bg.icon}</span><span class="bg-name">${bg.name}</span>`;
+              btn.addEventListener('click', () => {
+                bgList.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                freeDrawModule.loadBackground(bg.id);
+                bgPanel.classList.add('hidden');
+              });
+              bgList.appendChild(btn);
+            });
+          }
+          bgPanel.classList.remove('hidden');
+        }
+        audio.playPop();
+      });
+    }
+
     if (eraserTool) {
       eraserTool.addEventListener('click', () => {
-        const isActive = eraserTool.classList.toggle('active');
-        freeDrawModule.toggleEraser(isActive);
+        resetFreeTools();
+        eraserTool.classList.add('active');
+        freeDrawModule.toggleEraser(true);
         audio.playTap();
       });
     }
-    
+
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
         freeDrawModule.clear();
       });
     }
-    
+
     if (saveBtn) {
       saveBtn.addEventListener('click', () => {
         freeDrawModule.save();

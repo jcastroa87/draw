@@ -35,7 +35,7 @@ export const translations = {
     matchingTitle: 'Asociar',
     matchingInstructionLetters: '¡Une cada letra con su dibujo!',
     matchingInstructionNumbers: '¡Une cada número con la cantidad!',
-    matchingModeLetters: 'АБВ Letras',
+    matchingModeLetters: 'ABC Letras',
     matchingModeNumbers: '123 Números',
     excellent: '¡Excelente!',
     

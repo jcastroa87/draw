@@ -12,7 +12,7 @@ export const SETTINGS = {
   // Tracing module configuration
   TRACING: {
     COMPLETION_THRESHOLD: 0.85, // 0.0 to 1.0 (85% coverage required)
-    USER_LINE_WIDTH: 70,        // Brush thickness in pixels
+    USER_LINE_WIDTH: 35,        // Brush thickness in pixels (reduced for better visibility)
     GUIDE_COLOR: '#E0E0E0',     // Color of the letter guide
     STROKE_COLOR: '#333333',    // Color of the user's stroke
     FONT_FAMILY: 'Arial Rounded MT Bold, Arial, sans-serif'

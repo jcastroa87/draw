@@ -52,10 +52,12 @@
             <button class="menu-card" data-module="letters">
               <div class="card-icon">ABC</div>
               <div class="card-label">Letras</div>
+              <div class="card-progress" id="letters-progress">0/27</div>
             </button>
             <button class="menu-card" data-module="numbers">
               <div class="card-icon">123</div>
               <div class="card-label">Números</div>
+              <div class="card-progress" id="numbers-progress">0/21</div>
             </button>
             <button class="menu-card" data-module="matching">
               <div class="card-icon">🔗</div>
@@ -90,6 +92,10 @@
         <header class="game-header">
           <button class="back-btn" data-target="menu">←</button>
           <h2 class="game-title">Letras</h2>
+          <div class="banana-counter">
+            <span class="banana-icon">🍌</span>
+            <span class="banana-count" id="letters-banana-count">0</span>
+          </div>
           <button id="letter-picker-btn" class="picker-btn">📋</button>
         </header>
 
@@ -99,6 +105,7 @@
           </div>
           <canvas id="tracing-canvas" class="tracing-canvas"></canvas>
           <div class="tracing-controls">
+            <button id="replay-letter-demo" class="control-btn demo-btn" title="Ver demo">🎬</button>
             <button id="clear-tracing" class="control-btn">🗑️ Borrar</button>
             <button id="prev-letter" class="control-btn">⬅️</button>
             <button id="next-letter" class="control-btn">➡️</button>
@@ -132,6 +139,10 @@
         <header class="game-header">
           <button class="back-btn" data-target="menu">←</button>
           <h2 class="game-title">Números</h2>
+          <div class="banana-counter">
+            <span class="banana-icon">🍌</span>
+            <span class="banana-count" id="numbers-banana-count">0</span>
+          </div>
           <button id="number-picker-btn" class="picker-btn">📋</button>
         </header>
 
@@ -144,6 +155,7 @@
             <canvas id="number-canvas" class="tracing-canvas"></canvas>
           </div>
           <div class="tracing-controls">
+            <button id="replay-number-demo" class="control-btn demo-btn" title="Ver demo">🎬</button>
             <button id="clear-number" class="control-btn">🗑️ Borrar</button>
             <button id="prev-number" class="control-btn">⬅️</button>
             <button id="next-number" class="control-btn">➡️</button>
@@ -177,6 +189,10 @@
         <header class="game-header">
           <button class="back-btn" data-target="menu">←</button>
           <h2 class="game-title">Asociar</h2>
+          <div class="banana-counter">
+            <span class="banana-icon">🍌</span>
+            <span class="banana-count" id="matching-banana-count">0</span>
+          </div>
           <div class="matching-score">
             <span id="matching-score">0</span>
             <span>⭐</span>
@@ -187,7 +203,7 @@
           <div class="matching-instruction" id="matching-instruction">
             ¡Une cada letra con su dibujo!
           </div>
-          
+
           <div class="matching-game-area">
             <div class="matching-column" id="matching-left">
               <!-- Letters/Numbers will be added here -->
@@ -201,11 +217,22 @@
           </div>
 
           <div class="matching-controls">
-            <button id="matching-mode-letters" class="mode-btn active">АБВ Letras</button>
-            <button id="matching-mode-numbers" class="mode-btn">123 Números</button>
-            <button id="matching-new-game" class="control-btn">🔄 Nuevo</button>
+            <button id="matching-mode-letters" class="mode-btn active">ABC</button>
+            <button id="matching-mode-numbers" class="mode-btn">123</button>
+            <button id="matching-mode-colors" class="mode-btn">🎨</button>
+            <button id="matching-mode-shapes" class="mode-btn">⭐</button>
+            <button id="matching-mode-animals" class="mode-btn">🐶</button>
+            <button id="matching-new-game" class="control-btn">🔄</button>
           </div>
         </main>
+
+        <!-- Word Feedback Overlay -->
+        <div id="word-feedback" class="word-feedback-overlay hidden">
+          <div class="word-feedback-content">
+            <span class="word-emoji"></span>
+            <span class="word-text"></span>
+          </div>
+        </div>
 
         <div id="matching-celebration" class="celebration hidden">
           <div class="celebration-content">
@@ -244,13 +271,49 @@
               <button id="brush-tool" class="tool-btn" title="Pincel">
                 🖌️
               </button>
-
+              <button id="coloring-rainbow-btn" class="tool-btn" title="Arcoíris">
+                🌈
+              </button>
+              <button id="coloring-sticker-btn" class="tool-btn" title="Stickers">
+                🎨
+              </button>
               <button id="undo-btn" class="tool-btn" title="Deshacer">
                 ↩️
               </button>
               <button id="clear-coloring" class="tool-btn" title="Limpiar">
                 🗑️
               </button>
+            </div>
+          </div>
+
+          <!-- Sticker Panel for Coloring -->
+          <div id="coloring-sticker-panel" class="sticker-panel hidden">
+            <div class="sticker-size-selector">
+              <button class="size-select-btn" data-size="40">S</button>
+              <button class="size-select-btn active" data-size="70">M</button>
+              <button class="size-select-btn" data-size="110">L</button>
+            </div>
+            <div class="sticker-list">
+              <button class="sticker-btn">🌟</button>
+              <button class="sticker-btn">⭐</button>
+              <button class="sticker-btn">🌈</button>
+              <button class="sticker-btn">🦋</button>
+              <button class="sticker-btn">🐝</button>
+              <button class="sticker-btn">🌸</button>
+              <button class="sticker-btn">🌺</button>
+              <button class="sticker-btn">🍎</button>
+              <button class="sticker-btn">🍌</button>
+              <button class="sticker-btn">🎈</button>
+              <button class="sticker-btn">🎀</button>
+              <button class="sticker-btn">❤️</button>
+              <button class="sticker-btn">💖</button>
+              <button class="sticker-btn">🔵</button>
+              <button class="sticker-btn">🟢</button>
+              <button class="sticker-btn">🟡</button>
+              <button class="sticker-btn">🐱</button>
+              <button class="sticker-btn">🐶</button>
+              <button class="sticker-btn">🦁</button>
+              <button class="sticker-btn">🐸</button>
             </div>
           </div>
         </main>
@@ -277,12 +340,59 @@
               <button class="size-btn" data-size="30">⬛</button>
             </div>
             <div class="tool-buttons">
+              <button id="free-rainbow-btn" class="tool-btn" title="Arcoíris">
+                🌈
+              </button>
+              <button id="free-sticker-btn" class="tool-btn" title="Stickers">
+                🎨
+              </button>
+              <button id="free-bg-btn" class="tool-btn" title="Fondo">
+                🖼️
+              </button>
               <button id="eraser-tool" class="tool-btn" title="Borrador">
                 🧽
               </button>
               <button id="clear-free" class="tool-btn" title="Limpiar">
                 🗑️
               </button>
+            </div>
+          </div>
+
+          <!-- Sticker Panel for Free Draw -->
+          <div id="free-sticker-panel" class="sticker-panel hidden">
+            <div class="sticker-size-selector">
+              <button class="size-select-btn" data-size="40">S</button>
+              <button class="size-select-btn active" data-size="70">M</button>
+              <button class="size-select-btn" data-size="110">L</button>
+            </div>
+            <div class="sticker-list">
+              <button class="sticker-btn">🌟</button>
+              <button class="sticker-btn">⭐</button>
+              <button class="sticker-btn">🌈</button>
+              <button class="sticker-btn">🦋</button>
+              <button class="sticker-btn">🐝</button>
+              <button class="sticker-btn">🌸</button>
+              <button class="sticker-btn">🌺</button>
+              <button class="sticker-btn">🍎</button>
+              <button class="sticker-btn">🍌</button>
+              <button class="sticker-btn">🎈</button>
+              <button class="sticker-btn">🎀</button>
+              <button class="sticker-btn">❤️</button>
+              <button class="sticker-btn">💖</button>
+              <button class="sticker-btn">🔵</button>
+              <button class="sticker-btn">🟢</button>
+              <button class="sticker-btn">🟡</button>
+              <button class="sticker-btn">🐱</button>
+              <button class="sticker-btn">🐶</button>
+              <button class="sticker-btn">🦁</button>
+              <button class="sticker-btn">🐸</button>
+            </div>
+          </div>
+
+          <!-- Background Picker for Free Draw -->
+          <div id="free-bg-panel" class="bg-picker-panel hidden">
+            <div class="bg-list" id="bg-list">
+              <!-- Backgrounds will be added by JS -->
             </div>
           </div>
         </main>
